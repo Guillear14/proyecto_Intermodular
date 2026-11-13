@@ -19,43 +19,35 @@ namespace proyectoDefinitivo
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public App()
-        {
-            ServiceCollection services = new();
-            ConfigureServices(services);
-            _serviceProvider = services.BuildServiceProvider();
-        }
+public App()
+{
+    ServiceCollection services = new();
+    ConfigureServices(services);
+    _serviceProvider = services.BuildServiceProvider();
+}
 
-        // Registro de ventanas y factorías para Inyección de Dependencias
-        private static void ConfigureServices(IServiceCollection services)
-        {
-            // Registros base de las ventanas
-            services.AddTransient<PantallaLogin>();
-            services.AddTransient<MainWindow>();
-            services.AddTransient<registro>();
-            services.AddTransient<olvidarContraseña>();
+private static void ConfigureServices(IServiceCollection services)
+{
+   
 
-            // Factoría original para el Login
-            services.AddTransient<Func<PantallaLogin>>(serviceProvider =>
-                () => serviceProvider.GetRequiredService<PantallaLogin>());
+    services.AddTransient<PantallaLogin>();
+    services.AddTransient<registro>();
+    services.AddTransient<olvidarContraseña>();
+    services.AddTransient<MainWindow>();
 
-            // AÑADE ESTO: Enseña al sistema cómo resolver Func<olvidarContraseña>
-            services.AddTransient<Func<olvidarContraseña>>(serviceProvider =>
-                () => serviceProvider.GetRequiredService<olvidarContraseña>());
+    services.AddTransient<Func<PantallaLogin>>(sp => () => sp.GetRequiredService<PantallaLogin>());
+    services.AddTransient<Func<registro>>(sp => () => sp.GetRequiredService<registro>());
+    services.AddTransient<Func<olvidarContraseña>>(sp => () => sp.GetRequiredService<olvidarContraseña>());
+    services.AddTransient<Func<MainWindow>>(sp => () => sp.GetRequiredService<MainWindow>());
+}
 
-            // AÑADE ESTO TAMBIÉN: Para evitar el mismo error al abrir el Registro
-            services.AddTransient<Func<registro>>(serviceProvider =>
-                () => serviceProvider.GetRequiredService<registro>());
-        }
-
-        // Sobrescribe el inicio de la aplicación para lanzar primero PantallaLogin
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            base.OnStartup(e);
-            PantallaLogin login = _serviceProvider.GetRequiredService<PantallaLogin>();
-            MainWindow = login;
-            ShutdownMode = ShutdownMode.OnMainWindowClose;
-            login.Show();
-        }
+protected override void OnStartup(StartupEventArgs e)
+{
+    base.OnStartup(e);
+    PantallaLogin login = _serviceProvider.GetRequiredService<PantallaLogin>();
+    MainWindow = login;
+    ShutdownMode = ShutdownMode.OnMainWindowClose;
+    login.Show();
+}
     }
 }
